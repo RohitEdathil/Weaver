@@ -4,7 +4,16 @@ export const API_URL =
 export interface Session {
   id: string
   canvas: string
+  mode: string
 }
+
+export type VisualizerEvent =
+  | { type: 'text'; text: string; partial: boolean }
+  | { type: 'tool_call'; name: string; args: Record<string, unknown> }
+  | { type: 'tool_result'; name: string; result: unknown }
+  | { type: 'control'; action: 'refresh_canvas' }
+  | { type: 'error'; message: string }
+  | { type: 'done' }
 
 export async function createSession(): Promise<Session> {
   const res = await fetch(`${API_URL}/session`, { method: 'POST' })
@@ -16,4 +25,46 @@ export async function createSession(): Promise<Session> {
 
 export function canvasUrl(sessionId: string): string {
   return `${API_URL}/session/${sessionId}/canvas`
+}
+
+export async function sendVisualizerMessage(
+  sessionId: string,
+  message: string,
+  onEvent: (event: VisualizerEvent) => void,
+  signal?: AbortSignal,
+): Promise<void> {
+  const res = await fetch(`${API_URL}/session/${sessionId}/visualizer`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message }),
+    signal,
+  })
+  if (!res.ok || !res.body) {
+    throw new Error(`Visualizer request failed (${res.status})`)
+  }
+
+  const reader = res.body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+
+    const chunks = buffer.split('\n\n')
+    buffer = chunks.pop() ?? ''
+    for (const chunk of chunks) {
+      for (const line of chunk.split('\n')) {
+        if (!line.startsWith('data:')) continue
+        const payload = line.slice(5).trim()
+        if (!payload) continue
+        try {
+          onEvent(JSON.parse(payload) as VisualizerEvent)
+        } catch {
+          // Ignore malformed frames rather than killing the stream.
+        }
+      }
+    }
+  }
 }

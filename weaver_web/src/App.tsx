@@ -1,45 +1,55 @@
-import { useEffect, useRef, useState } from 'react'
-import { canvasUrl, createSession, type Session } from './api'
+import { useState } from 'react'
+import { canvasUrl } from './api'
+import { VisualizerAgentPanel } from './components/VisualizerAgentPanel'
+import { useSession } from './hooks/useSession'
 import './App.css'
 
 function App() {
-  const [session, setSession] = useState<Session | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const started = useRef(false)
+  const { session, error } = useSession()
+  const [panelOpen, setPanelOpen] = useState(true)
+  const [canvasVersion, setCanvasVersion] = useState(0)
 
-  useEffect(() => {
-    if (started.current) return
-    started.current = true
+  if (error) {
+    return (
+      <main className="app">
+        <p className="status error">{error}</p>
+      </main>
+    )
+  }
 
-    const init = async () => {
-      try {
-        setSession(await createSession())
-      } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : String(err))
-      }
-    }
-
-    init()
-  }, [])
+  if (!session) {
+    return (
+      <main className="app">
+        <p className="status">Initializing session…</p>
+      </main>
+    )
+  }
 
   return (
     <main className="app">
       <header className="app-header">
         <h1>Weaver</h1>
-        {session && <code className="session-id">{session.id}</code>}
+        <span className="mode-badge">{session.mode}</span>
+        <code className="session-id">{session.id}</code>
       </header>
 
-      <section className="canvas-frame">
-        {error && <p className="status error">{error}</p>}
-        {!session && !error && <p className="status">Initializing session…</p>}
-        {session && (
+      <div className="app-body">
+        <section className="canvas-frame">
           <iframe
+            key={`${session.id}:${canvasVersion}`}
             title="Weaver canvas"
             className="canvas"
             src={canvasUrl(session.id)}
           />
-        )}
-      </section>
+        </section>
+
+        <VisualizerAgentPanel
+          sessionId={session.id}
+          open={panelOpen}
+          onToggle={() => setPanelOpen((open) => !open)}
+          onCanvasUpdate={() => setCanvasVersion((version) => version + 1)}
+        />
+      </div>
     </main>
   )
 }
