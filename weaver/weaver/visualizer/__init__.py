@@ -1,0 +1,18 @@
+"""The visualizer text agent.
+
+A single, self-contained ADK agent that writes the canvas source code for a
+session. It talks to the tools in ``tools`` to read, patch and rewrite the
+current canvas, and exposes a token stream that the API layer forwards over SSE.
+
+The canvas code lives in the ADK session state under ``CODE_STATE_KEY`` so it
+survives across turns (and can later move to a durable session service without
+touching the agent).
+"""
+
+from __future__ import annotations
+
+from weaver.visualizer.agent import create_session, get_code
+from weaver.visualizer.config import MODE
+from weaver.visualizer.stream import stream
+
+__all__ = ["MODE", "create_session", "get_code", "stream"]

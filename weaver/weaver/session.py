@@ -1,7 +1,9 @@
 import uuid
 from pathlib import Path
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+
+import weaver.visualizer as visualizer
 
 _PLACEHOLDER_PATH = Path(__file__).parent / "placeholder.html"
 
@@ -11,18 +13,17 @@ def _load_placeholder() -> str:
 
 
 class Session(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    canvas: str = Field(default_factory=_load_placeholder)
+    id: str
+    canvas: str
+    mode: str
 
 
-_sessions: dict[str, Session] = {}
+async def create_session() -> Session:
+    session_id = str(uuid.uuid4())
+    canvas = _load_placeholder()
+    await visualizer.create_session(session_id, canvas)
+    return Session(id=session_id, canvas=canvas, mode=visualizer.MODE)
 
 
-def create_session() -> Session:
-    session = Session()
-    _sessions[session.id] = session
-    return session
-
-
-def get_session(session_id: str) -> Session | None:
-    return _sessions.get(session_id)
+async def get_canvas(session_id: str) -> str | None:
+    return await visualizer.get_code(session_id)
