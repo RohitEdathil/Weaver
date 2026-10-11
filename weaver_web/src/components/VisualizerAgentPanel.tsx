@@ -8,14 +8,12 @@ import './VisualizerAgentPanel.css'
 interface Props {
   sessionId: string
   open: boolean
-  onToggle: () => void
   onCanvasUpdate: () => void
 }
 
 export function VisualizerAgentPanel({
   sessionId,
   open,
-  onToggle,
   onCanvasUpdate,
 }: Props) {
   const { items, streaming, error, send } = useVisualizerAgent(
@@ -42,17 +40,7 @@ export function VisualizerAgentPanel({
   return (
     <aside className={`visualizer-agent${open ? ' open' : ''}`}>
       <div className="visualizer-agent-header">
-        <button
-          type="button"
-          className="visualizer-agent-toggle"
-          onClick={onToggle}
-          aria-label={
-            open ? 'Collapse visualizer agent' : 'Expand visualizer agent'
-          }
-        >
-          {open ? '›' : '‹'}
-        </button>
-        {open && <h2>Visualizer Agent</h2>}
+        <h2>Visualizer Agent</h2>
       </div>
 
       {open && (
@@ -76,10 +64,14 @@ export function VisualizerAgentPanel({
                 ) : (
                   item.text
                 )}
-                {item.detail && <pre className="tool-detail">{item.detail}</pre>}
+                {item.detail && (
+                  <pre className="tool-detail">{item.detail}</pre>
+                )}
               </div>
             ))}
-            {streaming && <p className="visualizer-agent-thinking">Working…</p>}
+            {streaming && (
+              <p className="visualizer-agent-thinking">Working…</p>
+            )}
           </div>
 
           {error && <p className="visualizer-agent-error">{error}</p>}

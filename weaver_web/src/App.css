@@ -39,6 +39,26 @@
   color: #9ca3af;
 }
 
+.app-panel-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  border: 1px solid #2f2f3a;
+  border-radius: 6px;
+  background: #17171f;
+  color: #d1d5db;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.app-panel-toggle:hover {
+  background: #1f1f29;
+}
+
 .app-body {
   position: relative;
   display: flex;

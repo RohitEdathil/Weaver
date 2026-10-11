@@ -5,12 +5,14 @@
   top: 0;
   right: 0;
   bottom: 0;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   width: 380px;
   border-left: 1px solid #23232c;
-  background: #101015;
-  transform: translateX(calc(100% - 44px));
+  background: rgba(16, 16, 21, 0.85);
+  backdrop-filter: blur(6px);
+  transform: translateX(100%);
   transition: transform 0.18s ease;
   overflow: hidden;
 }
@@ -26,26 +28,6 @@
   padding: 8px;
   border-bottom: 1px solid #23232c;
   flex: 0 0 auto;
-}
-
-.visualizer-agent-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  flex: 0 0 auto;
-  border: 1px solid #2f2f3a;
-  border-radius: 6px;
-  background: #17171f;
-  color: #d1d5db;
-  font-size: 16px;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.visualizer-agent-toggle:hover {
-  background: #1f1f29;
 }
 
 .visualizer-agent-header h2 {

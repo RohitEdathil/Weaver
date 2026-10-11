@@ -31,6 +31,16 @@ function App() {
         <h1>Weaver</h1>
         <span className="mode-badge">{session.mode}</span>
         <code className="session-id">{session.id}</code>
+        <button
+          type="button"
+          className="app-panel-toggle"
+          onClick={() => setPanelOpen((open) => !open)}
+          aria-label={
+            panelOpen ? 'Collapse visualizer agent' : 'Expand visualizer agent'
+          }
+        >
+          {panelOpen ? '›' : '‹'}
+        </button>
       </header>
 
       <div className="app-body">
@@ -46,7 +56,6 @@ function App() {
         <VisualizerAgentPanel
           sessionId={session.id}
           open={panelOpen}
-          onToggle={() => setPanelOpen((open) => !open)}
           onCanvasUpdate={() => setCanvasVersion((version) => version + 1)}
         />
       </div>
