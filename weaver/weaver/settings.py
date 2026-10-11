@@ -39,7 +39,7 @@ class Settings(BaseSettings):
     )
 
     # Visualizer agent.
-    mode: Mode = Field(default="fast", validation_alias="VISUALIZER_MODE")
+    mode: Mode = Field(default="accurate", validation_alias="VISUALIZER_MODE")
 
     # LangSmith tracing (optional). When enabled, ADK agent runs are traced.
     langsmith_tracing: bool = Field(
