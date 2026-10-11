@@ -9,8 +9,7 @@ export interface Session {
 
 export type VisualizerEvent =
   | { type: 'text'; text: string; partial: boolean }
-  | { type: 'tool_call'; name: string; args: Record<string, unknown> }
-  | { type: 'tool_result'; name: string; result: unknown }
+  | { type: 'tool_call'; name: string }
   | { type: 'control'; action: 'refresh_canvas' }
   | { type: 'error'; message: string }
   | { type: 'done' }
@@ -25,6 +24,14 @@ export async function createSession(): Promise<Session> {
 
 export function canvasUrl(sessionId: string): string {
   return `${API_URL}/session/${sessionId}/canvas`
+}
+
+export async function getCode(sessionId: string): Promise<string> {
+  const res = await fetch(`${API_URL}/session/${sessionId}/code`)
+  if (!res.ok) {
+    throw new Error(`Failed to load code (${res.status})`)
+  }
+  return res.text()
 }
 
 export async function sendVisualizerMessage(

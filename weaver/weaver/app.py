@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from fastapi.applications import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse, StreamingResponse
 from pydantic import BaseModel
 
 import weaver.session as session
@@ -35,6 +35,14 @@ async def get_canvas(id: str) -> HTMLResponse:
     if canvas is None:
         raise HTTPException(status_code=404, detail="Session not found")
     return HTMLResponse(content=canvas)
+
+
+@app.get("/session/{id}/code", response_class=PlainTextResponse)
+async def get_code(id: str) -> PlainTextResponse:
+    code = await session.get_canvas(id)
+    if code is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return PlainTextResponse(content=code)
 
 
 @app.post("/session/{id}/visualizer")

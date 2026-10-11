@@ -16,7 +16,6 @@ from weaver.visualizer.events import (
     Event,
     TextEvent,
     ToolCallEvent,
-    ToolResultEvent,
 )
 
 # Tools that mutate the canvas; used to decide when to emit a ``canvas`` event.
@@ -30,6 +29,14 @@ def _text_of(event: Any) -> str:
     return "".join(
         part.text for part in content.parts if part.text and not part.thought
     )
+
+
+def _error_of(result: Any) -> str | None:
+    """Return the tool's error message, if the tool reported one."""
+    text = result.get("result") if isinstance(result, dict) else result
+    if isinstance(text, str) and text.startswith("Error"):
+        return text
+    return None
 
 
 async def stream(session_id: str, message: str) -> AsyncIterator[Event]:
@@ -58,14 +65,14 @@ async def stream(session_id: str, message: str) -> AsyncIterator[Event]:
             # only the non-partial event holds the full call.
             if not event.partial:
                 for call in event.get_function_calls():
-                    yield ToolCallEvent(name=call.name, args=_jsonable(call.args))
+                    yield ToolCallEvent(name=call.name)
 
             for response in event.get_function_responses():
                 if response.name in CODE_TOOLS:
                     code_changed = True
-                yield ToolResultEvent(
-                    name=response.name, result=_jsonable(response.response)
-                )
+                error = _error_of(response.response)
+                if error:
+                    yield ErrorEvent(message=error)
 
             if event.error_code:
                 yield ErrorEvent(message=event.error_message or event.error_code)
@@ -86,19 +93,3 @@ async def stream(session_id: str, message: str) -> AsyncIterator[Event]:
     if code_changed:
         yield ControlEvent(action="refresh_canvas")
     yield DoneEvent()
-
-
-def _jsonable(value: Any) -> Any:
-    """Best-effort conversion of ADK/genai objects into JSON-safe values."""
-    if value is None or isinstance(value, (str, int, float, bool)):
-        return value
-    if isinstance(value, dict):
-        return {str(k): _jsonable(v) for k, v in value.items()}
-    if isinstance(value, (list, tuple, set)):
-        return [_jsonable(v) for v in value]
-    if hasattr(value, "model_dump"):
-        try:
-            return _jsonable(value.model_dump(exclude_none=True, by_alias=True))
-        except Exception:  # noqa: BLE001
-            return str(value)
-    return str(value)

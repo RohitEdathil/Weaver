@@ -64,9 +64,6 @@ export function VisualizerAgentPanel({
                 ) : (
                   item.text
                 )}
-                {item.detail && (
-                  <pre className="tool-detail">{item.detail}</pre>
-                )}
               </div>
             ))}
             {streaming && (

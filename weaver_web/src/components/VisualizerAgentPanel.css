@@ -182,21 +182,6 @@
   font-family: ui-monospace, Consolas, monospace;
 }
 
-.tool-detail {
-  margin: 0;
-  max-height: 180px;
-  overflow: auto;
-  padding: 8px;
-  border-radius: 6px;
-  background: #0b0b0f;
-  border: 1px solid #23232c;
-  color: #9ca3af;
-  font-size: 11px;
-  font-family: ui-monospace, Consolas, monospace;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
 .visualizer-agent-error {
   margin: 0;
   padding: 8px 12px;

@@ -6,7 +6,7 @@ format and clients share a single, typed contract.
 
 from __future__ import annotations
 
-from typing import Annotated, Any, Literal, Union
+from typing import Annotated, Literal, Union
 
 from pydantic import BaseModel, Field
 
@@ -24,15 +24,6 @@ class ToolCallEvent(BaseModel):
 
     type: Literal["tool_call"] = "tool_call"
     name: str
-    args: Any
-
-
-class ToolResultEvent(BaseModel):
-    """A tool returned a result."""
-
-    type: Literal["tool_result"] = "tool_result"
-    name: str
-    result: Any
 
 
 ControlAction = Literal["refresh_canvas"]
@@ -62,7 +53,6 @@ Event = Annotated[
     Union[
         TextEvent,
         ToolCallEvent,
-        ToolResultEvent,
         ControlEvent,
         ErrorEvent,
         DoneEvent,

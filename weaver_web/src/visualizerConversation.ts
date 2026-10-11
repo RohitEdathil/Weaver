@@ -7,7 +7,6 @@ export interface Item {
   role: ItemRole
   text?: string
   name?: string
-  detail?: string
 }
 
 export interface LogState {
@@ -35,38 +34,6 @@ const TOOL_LABELS: Record<string, string> = {
 
 export function toolLabel(name: string): string {
   return TOOL_LABELS[name] ?? name
-}
-
-function truncate(text: string, max = 400): string {
-  return text.length > max ? `${text.slice(0, max)}…` : text
-}
-
-function callDetail(
-  name: string,
-  args: Record<string, unknown>,
-): string | undefined {
-  if (name === 'read_code') return undefined
-  if (typeof args.code === 'string') return truncate(args.code)
-  if (Array.isArray(args.patches)) {
-    return args.patches
-      .map((patch) => {
-        const p = patch as { target?: unknown; content?: unknown }
-        const target = typeof p.target === 'string' ? p.target : ''
-        const content = typeof p.content === 'string' ? p.content : ''
-        return `- ${target}\n+ ${content}`
-      })
-      .join('\n\n')
-  }
-  return undefined
-}
-
-function resultText(result: unknown): string | undefined {
-  if (typeof result === 'string') return result
-  if (result && typeof result === 'object' && 'result' in result) {
-    const inner = (result as { result: unknown }).result
-    return typeof inner === 'string' ? inner : undefined
-  }
-  return undefined
 }
 
 function append(state: LogState, item: Omit<Item, 'id'>): LogState {
@@ -105,18 +72,8 @@ function applyEvent(state: LogState, event: VisualizerEvent): LogState {
     case 'tool_call':
       return append(
         { ...state, activeAssistant: null },
-        {
-          role: 'tool',
-          name: event.name,
-          detail: callDetail(event.name, event.args),
-        },
+        { role: 'tool', name: event.name },
       )
-    case 'tool_result': {
-      const message = resultText(event.result)
-      return message?.startsWith('Error')
-        ? append(state, { role: 'error', text: message })
-        : state
-    }
     case 'error':
       return append(
         { ...state, activeAssistant: null },
