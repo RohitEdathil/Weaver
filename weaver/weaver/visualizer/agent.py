@@ -12,9 +12,10 @@ from google.adk.apps import App
 from google.adk.apps._configs import EventsCompactionConfig
 from google.adk.apps.llm_event_summarizer import LlmEventSummarizer
 from google.adk.sessions import InMemorySessionService
+from google.genai import types
 
 from weaver.visualizer.config import CONFIG
-from weaver.visualizer.context import tool_call_redaction
+from weaver.visualizer.context import context_editing
 from weaver.visualizer.llm import model
 from weaver.visualizer.prompts import BASE_INSTRUCTION
 from weaver.visualizer.tools import CODE_STATE_KEY, apply_patch, read_code, write_code
@@ -28,12 +29,15 @@ agent = LlmAgent(
     description="Writes and edits the interactive canvas for a Weaver session.",
     instruction=BASE_INSTRUCTION,
     tools=[read_code, write_code, apply_patch],
+    generate_content_config=types.GenerateContentConfig(
+        max_output_tokens=CONFIG.max_output_tokens,
+    ),
 )
 
 app = App(
     name=APP_NAME,
     root_agent=agent,
-    plugins=[tool_call_redaction],
+    plugins=[context_editing],
     events_compaction_config=EventsCompactionConfig(
         summarizer=LlmEventSummarizer(llm=model),
         compaction_interval=CONFIG.compaction_interval,

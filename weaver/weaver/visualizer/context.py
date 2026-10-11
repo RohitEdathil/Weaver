@@ -1,9 +1,12 @@
-"""Tool-call redaction for the visualizer agent.
+"""Context editing for the visualizer agent.
 
-Replaces the selected tools' inputs and outputs from every turn before the
-current one with a placeholder, so stale canvas reads and diffs do not pile up.
-ADK rebuilds the contents before each model call, so this is re-applied every
-call.
+Model reasoning ("thought") parts and the selected tools' inputs and outputs
+from every turn before the current one are dropped or replaced with a
+placeholder, so stale chain-of-thought, canvas reads and diffs do not pile up.
+The current turn is left intact, otherwise the model starts reasoning again.
+
+ADK rebuilds the contents before each model call, so the edits are re-applied
+every call.
 """
 
 from __future__ import annotations
@@ -61,32 +64,47 @@ def _redact_part(part: types.Part, tools: frozenset[str]) -> types.Part:
     return part
 
 
-def _redact_history(
+def _edit_history(
     contents: list[types.Content], tools: frozenset[str]
 ) -> list[types.Content]:
-    """Redact selected tool I/O from every turn before the current one.
+    """Drop reasoning and redact tool I/O for every turn before the current one.
 
-    The current turn is left intact. Returns a new list.
+    The current turn is left intact so the model keeps its recent reasoning.
+    Contents left with no parts are dropped. Returns a new list.
     """
     start = _current_turn_start(contents)
-    redacted: list[types.Content] = []
+    edited: list[types.Content] = []
     for index, content in enumerate(contents):
+
+        # Leave the current turn alone
         if index >= start:
-            redacted.append(content)
+            edited.append(content)
             continue
-        parts = [_redact_part(part, tools) for part in content.parts or []]
-        redacted.append(content.model_copy(update={"parts": parts}))
-    return redacted
+
+        parts = content.parts or []
+
+        # Throw away reasoning
+        kept = [part for part in parts if not part.thought]
+        if parts and not kept:
+            continue
+
+        # Redact tool input and output
+        edited.append(
+            content.model_copy(
+                update={"parts": [_redact_part(part, tools) for part in kept]}
+            )
+        )
+    return edited
 
 
-class ToolCallRedactionPlugin(BasePlugin):
-    """Redacts selected tools' inputs and outputs from past turns."""
+class ContextEditingPlugin(BasePlugin):
+    """Strips reasoning parts and redacts past tool I/O from the request."""
 
     def __init__(
         self,
         *,
         redact_tools: frozenset[str] = DEFAULT_REDACT_TOOLS,
-        name: str = "tool_call_redaction",
+        name: str = "context_editing",
     ) -> None:
         """Initialise the plugin.
 
@@ -103,15 +121,15 @@ class ToolCallRedactionPlugin(BasePlugin):
         callback_context: CallbackContext,
         llm_request: LlmRequest,
     ) -> Optional[LlmResponse]:
-        """Redact past tool I/O just before the request reaches the model."""
+        """Edit the context just before the request reaches the model."""
         try:
-            llm_request.contents = _redact_history(
+            llm_request.contents = _edit_history(
                 llm_request.contents, self._redact_tools
             )
         except Exception:  # noqa: BLE001 - never block a model call
-            logger.exception("Tool-call redaction failed; sending context as is")
+            logger.exception("Context editing failed; sending context as is")
 
         return None
 
 
-tool_call_redaction = ToolCallRedactionPlugin()
+context_editing = ContextEditingPlugin()

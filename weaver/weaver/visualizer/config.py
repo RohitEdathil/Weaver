@@ -21,6 +21,7 @@ class ModeConfig:
     provider: str
     model: str
     compaction_interval: int
+    max_output_tokens: int
 
 
 MODE_CONFIGS: dict[str, ModeConfig] = {
@@ -28,11 +29,13 @@ MODE_CONFIGS: dict[str, ModeConfig] = {
         provider="google",
         model="gemini-3.5-flash-lite",
         compaction_interval=4,
+        max_output_tokens=65536,
     ),
     "accurate": ModeConfig(
         provider="openai",
         model="deepseek-v4.1-flash",
         compaction_interval=8,
+        max_output_tokens=65536,
     ),
 }
 
