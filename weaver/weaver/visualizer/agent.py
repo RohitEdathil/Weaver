@@ -14,6 +14,7 @@ from google.adk.apps.llm_event_summarizer import LlmEventSummarizer
 from google.adk.sessions import InMemorySessionService
 
 from weaver.visualizer.config import CONFIG
+from weaver.visualizer.context import tool_call_redaction
 from weaver.visualizer.llm import model
 from weaver.visualizer.prompts import BASE_INSTRUCTION
 from weaver.visualizer.tools import CODE_STATE_KEY, apply_patch, read_code, write_code
@@ -32,6 +33,7 @@ agent = LlmAgent(
 app = App(
     name=APP_NAME,
     root_agent=agent,
+    plugins=[tool_call_redaction],
     events_compaction_config=EventsCompactionConfig(
         summarizer=LlmEventSummarizer(llm=model),
         compaction_interval=CONFIG.compaction_interval,
