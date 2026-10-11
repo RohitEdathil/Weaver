@@ -41,6 +41,21 @@ class Settings(BaseSettings):
     # Visualizer agent.
     mode: Mode = Field(default="fast", validation_alias="VISUALIZER_MODE")
 
+    # LangSmith tracing (optional). When enabled, ADK agent runs are traced.
+    langsmith_tracing: bool = Field(
+        default=False, validation_alias="LANGSMITH_TRACING"
+    )
+    langsmith_endpoint: str = Field(
+        default="https://api.smith.langchain.com",
+        validation_alias="LANGSMITH_ENDPOINT",
+    )
+    langsmith_api_key: str | None = Field(
+        default=None, validation_alias="LANGSMITH_API_KEY"
+    )
+    langsmith_project: str = Field(
+        default="weaver", validation_alias="LANGSMITH_PROJECT"
+    )
+
     @field_validator("mode", mode="before")
     @classmethod
     def _normalize_mode(cls, value: object) -> object:

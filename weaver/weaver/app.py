@@ -6,6 +6,9 @@ from pydantic import BaseModel
 
 import weaver.session as session
 import weaver.visualizer as visualizer
+from weaver.tracing import configure_tracing
+
+configure_tracing()
 
 app = FastAPI()
 
