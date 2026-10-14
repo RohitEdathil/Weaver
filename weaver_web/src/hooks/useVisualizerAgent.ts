@@ -1,5 +1,9 @@
 import { useCallback, useReducer, useState } from 'react'
-import { sendVisualizerMessage, type VisualizerEvent } from '../api'
+import {
+  getVisualizerConversation,
+  sendVisualizerMessage,
+  type VisualizerEvent,
+} from '../api'
 import { initialLogState, logReducer } from '../visualizerConversation'
 
 export function useVisualizerAgent(
@@ -38,5 +42,14 @@ export function useVisualizerAgent(
     [onEvent, sessionId],
   )
 
-  return { items: log.items, streaming, error, send }
+  const load = useCallback(async () => {
+    try {
+      const turns = await getVisualizerConversation(sessionId)
+      dispatch({ type: 'load', turns })
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err))
+    }
+  }, [sessionId])
+
+  return { items: log.items, streaming, error, send, load }
 }

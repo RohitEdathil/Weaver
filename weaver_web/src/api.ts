@@ -10,9 +10,23 @@ export interface Session {
 export type VisualizerEvent =
   | { type: 'text'; text: string; partial: boolean }
   | { type: 'tool_call'; name: string }
-  | { type: 'control'; action: 'refresh_canvas' }
+  | { type: 'control'; action: 'refresh_canvas' | 'open_visualizer' }
   | { type: 'error'; message: string }
   | { type: 'done' }
+
+export type ConverserEvent =
+  | { type: 'transcript'; role: 'user' | 'agent'; text: string; partial: boolean }
+  | { type: 'audio'; data: string; mime_type: string }
+  | { type: 'interrupted' }
+  | { type: 'tool_call'; name: string }
+  | { type: 'control'; action: 'refresh_canvas' | 'open_visualizer' }
+  | { type: 'error'; message: string }
+  | { type: 'done' }
+
+export interface ConversationTurn {
+  role: 'user' | 'assistant'
+  text: string
+}
 
 export async function createSession(): Promise<Session> {
   const res = await fetch(`${API_URL}/session`, { method: 'POST' })
@@ -24,6 +38,25 @@ export async function createSession(): Promise<Session> {
 
 export function canvasUrl(sessionId: string): string {
   return `${API_URL}/session/${sessionId}/canvas`
+}
+
+export function converserSocketUrl(sessionId: string): string {
+  const base = API_URL.replace(/^http/, 'ws')
+  return `${base}/session/${sessionId}/converser`
+}
+
+export async function getVisualizerConversation(
+  sessionId: string,
+  signal?: AbortSignal,
+): Promise<ConversationTurn[]> {
+  const res = await fetch(
+    `${API_URL}/session/${sessionId}/visualizer/conversation`,
+    { signal },
+  )
+  if (!res.ok) {
+    throw new Error(`Failed to load conversation (${res.status})`)
+  }
+  return res.json()
 }
 
 export async function getCode(sessionId: string): Promise<string> {

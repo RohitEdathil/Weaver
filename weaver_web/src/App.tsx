@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { canvasUrl, getCode } from './api'
-import { VisualizerAgentPanel } from './components/VisualizerAgentPanel'
+import { SidePanel, type PanelTab } from './components/SidePanel'
 import { useSession } from './hooks/useSession'
 import './App.css'
 
@@ -9,7 +9,9 @@ type View = 'canvas' | 'code'
 function App() {
   const { session, error } = useSession()
   const [panelOpen, setPanelOpen] = useState(true)
+  const [tab, setTab] = useState<PanelTab>('converser')
   const [canvasVersion, setCanvasVersion] = useState(0)
+  const [visualizerRefresh, setVisualizerRefresh] = useState(0)
   const [view, setView] = useState<View>('canvas')
   const [code, setCode] = useState('')
   const [codeError, setCodeError] = useState<string | null>(null)
@@ -34,6 +36,15 @@ function App() {
       cancelled = true
     }
   }, [session, view, canvasVersion])
+
+  const refreshConversation = useCallback(() => {
+    setVisualizerRefresh((token) => token + 1)
+  }, [])
+
+  const refreshCanvas = useCallback(() => {
+    setCanvasVersion((version) => version + 1)
+    setVisualizerRefresh((token) => token + 1)
+  }, [])
 
   if (error) {
     return (
@@ -77,9 +88,7 @@ function App() {
           type="button"
           className="app-panel-toggle"
           onClick={() => setPanelOpen((open) => !open)}
-          aria-label={
-            panelOpen ? 'Collapse visualizer agent' : 'Expand visualizer agent'
-          }
+          aria-label={panelOpen ? 'Collapse side panel' : 'Expand side panel'}
         >
           {panelOpen ? '›' : '‹'}
         </button>
@@ -101,10 +110,14 @@ function App() {
           )}
         </section>
 
-        <VisualizerAgentPanel
+        <SidePanel
           sessionId={session.id}
           open={panelOpen}
-          onCanvasUpdate={() => setCanvasVersion((version) => version + 1)}
+          tab={tab}
+          onTabChange={setTab}
+          visualizerRefresh={visualizerRefresh}
+          onVisualizerInvoked={refreshConversation}
+          onCanvasRefresh={refreshCanvas}
         />
       </div>
     </main>

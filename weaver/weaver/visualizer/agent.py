@@ -1,7 +1,7 @@
 """The ADK agent, app and runner backing the visualizer.
 
 Also provides the session helpers used by the API layer to create a session and
-read back its canvas.
+read back its canvas and conversation.
 """
 
 from __future__ import annotations
@@ -67,3 +67,37 @@ async def get_code(session_id: str) -> str | None:
     if session is None:
         return None
     return session.state.get(CODE_STATE_KEY, "")
+
+
+def _text_of(content: types.Content | None) -> str:
+    """Concatenate the visible text of a content, ignoring thoughts/tools."""
+    if content is None or not content.parts:
+        return ""
+    return "".join(
+        part.text for part in content.parts if part.text and not part.thought
+    ).strip()
+
+
+async def get_conversation(
+    session_id: str, *, limit: int = 40
+) -> list[dict[str, str]]:
+    """Return the recent text turns of a session's conversation.
+
+    Includes both the user's direct messages and the turns the converser drove
+    through the ``use_visualizer`` tool, since both live in the same session.
+    Returns an empty list when the session is missing.
+    """
+    session = await session_service.get_session(
+        app_name=APP_NAME, user_id=USER_ID, session_id=session_id
+    )
+    if session is None:
+        return []
+
+    turns: list[dict[str, str]] = []
+    for event in session.events:
+        text = _text_of(event.content)
+        if not text:
+            continue
+        role = "user" if event.content.role == "user" else "assistant"
+        turns.append({"role": role, "text": text})
+    return turns[-limit:]

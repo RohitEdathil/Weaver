@@ -1,7 +1,9 @@
-"""UI-friendly events emitted by the visualizer stream.
+"""UI-friendly events emitted by Weaver's agents.
 
-Each event is a pydantic model so the API layer can serialize it to the SSE wire
-format and clients share a single, typed contract.
+Each event is a pydantic model so the API layer can serialize it to the wire
+format and clients share a single, typed contract. The visualizer streams these
+over SSE; the converser reuses the text/tool/control/error events and adds its
+own audio and transcript events on top.
 """
 
 from __future__ import annotations
@@ -26,7 +28,7 @@ class ToolCallEvent(BaseModel):
     name: str
 
 
-ControlAction = Literal["refresh_canvas"]
+ControlAction = Literal["refresh_canvas", "open_visualizer"]
 
 
 class ControlEvent(BaseModel):

@@ -1,0 +1,65 @@
+/* Side panel hosting the converser and visualizer tabs */
+
+.side-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  width: 380px;
+  border-left: 1px solid #23232c;
+  background: rgba(16, 16, 21, 0.85);
+  backdrop-filter: blur(6px);
+  transform: translateX(100%);
+  transition: transform 0.18s ease;
+  overflow: hidden;
+}
+
+.side-panel.open {
+  transform: translateX(0);
+}
+
+.side-panel-tabs {
+  display: flex;
+  flex: 0 0 auto;
+  border-bottom: 1px solid #23232c;
+}
+
+.side-panel-tabs button {
+  flex: 1;
+  padding: 10px 12px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: #9ca3af;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.side-panel-tabs button:hover {
+  color: #e5e7eb;
+}
+
+.side-panel-tabs button.active {
+  color: #f3f4f6;
+  border-bottom-color: #2563eb;
+}
+
+.side-panel-body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.side-panel-view {
+  position: absolute;
+  inset: 0;
+}
+
+.side-panel-view[hidden] {
+  display: none;
+}

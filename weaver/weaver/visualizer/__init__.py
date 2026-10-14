@@ -11,8 +11,8 @@ touching the agent).
 
 from __future__ import annotations
 
-from weaver.visualizer.agent import create_session, get_code
+from weaver.visualizer.agent import create_session, get_code, get_conversation
 from weaver.visualizer.config import MODE
 from weaver.visualizer.stream import stream
 
-__all__ = ["MODE", "create_session", "get_code", "stream"]
+__all__ = ["MODE", "create_session", "get_code", "get_conversation", "stream"]

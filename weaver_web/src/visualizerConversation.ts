@@ -1,4 +1,4 @@
-import type { VisualizerEvent } from './api'
+import type { ConversationTurn, VisualizerEvent } from './api'
 
 export type ItemRole = 'user' | 'assistant' | 'tool' | 'error'
 
@@ -24,6 +24,7 @@ export const initialLogState: LogState = {
 export type LogAction =
   | { type: 'user'; text: string }
   | { type: 'event'; event: VisualizerEvent }
+  | { type: 'load'; turns: ConversationTurn[] }
   | { type: 'end' }
 
 const TOOL_LABELS: Record<string, string> = {
@@ -92,6 +93,14 @@ export function logReducer(state: LogState, action: LogAction): LogState {
       return append(state, { role: 'user', text: action.text })
     case 'event':
       return applyEvent(state, action.event)
+    case 'load': {
+      const items = action.turns.map((turn, index) => ({
+        id: index,
+        role: turn.role,
+        text: turn.text,
+      }))
+      return { items, nextId: items.length, activeAssistant: null }
+    }
     case 'end':
       return { ...state, activeAssistant: null }
   }

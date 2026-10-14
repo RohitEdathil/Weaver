@@ -1,9 +1,10 @@
-from fastapi import HTTPException
+from fastapi import HTTPException, WebSocket
 from fastapi.applications import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, PlainTextResponse, StreamingResponse
 from pydantic import BaseModel
 
+import weaver.converser as converser
 import weaver.session as session
 import weaver.visualizer as visualizer
 from weaver.tracing import configure_tracing
@@ -45,6 +46,14 @@ async def get_code(id: str) -> PlainTextResponse:
     return PlainTextResponse(content=code)
 
 
+@app.get("/session/{id}/visualizer/conversation")
+async def get_visualizer_conversation(id: str) -> list[dict[str, str]]:
+    conversation = await session.get_conversation(id)
+    if conversation is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return conversation
+
+
 @app.post("/session/{id}/visualizer")
 async def visualizer_stream(id: str, body: VisualizerMessage) -> StreamingResponse:
     if await session.get_canvas(id) is None:
@@ -63,3 +72,8 @@ async def visualizer_stream(id: str, body: VisualizerMessage) -> StreamingRespon
             "X-Accel-Buffering": "no",
         },
     )
+
+
+@app.websocket("/session/{id}/converser")
+async def converser_live(websocket: WebSocket, id: str) -> None:
+    await converser.run(websocket, id)

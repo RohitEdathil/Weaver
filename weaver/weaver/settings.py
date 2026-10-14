@@ -39,7 +39,21 @@ class Settings(BaseSettings):
     )
 
     # Visualizer agent.
-    mode: Mode = Field(default="accurate", validation_alias="VISUALIZER_MODE")
+    mode: Mode = Field(default="fast", validation_alias="VISUALIZER_MODE")
+
+    # Converser (live voice) agent. Must be a Gemini Live model, since the
+    # converser streams bidirectional audio directly through the Gemini API.
+    converser_model: str = Field(
+        default="gemini-3.8-live",
+        validation_alias="CONVERSER_MODEL",
+    )
+
+    # Prebuilt Gemini Live voice for the converser. Pinning this stops the
+    # model from drifting between voices across turns.
+    converser_voice: str = Field(
+        default="Puck",
+        validation_alias="CONVERSER_VOICE",
+    )
 
     # LangSmith tracing (optional). When enabled, ADK agent runs are traced.
     langsmith_tracing: bool = Field(

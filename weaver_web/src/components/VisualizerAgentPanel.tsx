@@ -7,16 +7,16 @@ import './VisualizerAgentPanel.css'
 
 interface Props {
   sessionId: string
-  open: boolean
+  refreshToken: number
   onCanvasUpdate: () => void
 }
 
 export function VisualizerAgentPanel({
   sessionId,
-  open,
+  refreshToken,
   onCanvasUpdate,
 }: Props) {
-  const { items, streaming, error, send } = useVisualizerAgent(
+  const { items, streaming, error, send, load } = useVisualizerAgent(
     sessionId,
     onCanvasUpdate,
   )
@@ -26,7 +26,12 @@ export function VisualizerAgentPanel({
   useEffect(() => {
     const el = scrollRef.current
     if (el) el.scrollTop = el.scrollHeight
-  }, [items, open])
+  }, [items])
+
+  useEffect(() => {
+    if (streaming) return
+    void load()
+  }, [refreshToken, streaming, load])
 
   const submit = (event: FormEvent) => {
     event.preventDefault()
@@ -38,60 +43,50 @@ export function VisualizerAgentPanel({
   }
 
   return (
-    <aside className={`visualizer-agent${open ? ' open' : ''}`}>
-      <div className="visualizer-agent-header">
-        <h2>Visualizer Agent</h2>
-      </div>
-
-      {open && (
-        <>
-          <div className="visualizer-agent-log" ref={scrollRef}>
-            {items.length === 0 && (
-              <p className="visualizer-agent-empty">
-                Ask the visualizer to build or edit the canvas.
-              </p>
-            )}
-            {items.map((item) => (
-              <div key={item.id} className={`msg ${item.role}`}>
-                {item.role === 'tool' ? (
-                  <span className="tool-chip">{toolLabel(item.name ?? '')}</span>
-                ) : item.role === 'assistant' || item.role === 'user' ? (
-                  <div className="msg-markdown">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {item.text ?? ''}
-                    </ReactMarkdown>
-                  </div>
-                ) : (
-                  item.text
-                )}
+    <div className="visualizer-agent-content">
+      <div className="visualizer-agent-log" ref={scrollRef}>
+        {items.length === 0 && (
+          <p className="visualizer-agent-empty">
+            Ask the visualizer to build or edit the canvas.
+          </p>
+        )}
+        {items.map((item) => (
+          <div key={item.id} className={`msg ${item.role}`}>
+            {item.role === 'tool' ? (
+              <span className="tool-chip">{toolLabel(item.name ?? '')}</span>
+            ) : item.role === 'assistant' || item.role === 'user' ? (
+              <div className="msg-markdown">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {item.text ?? ''}
+                </ReactMarkdown>
               </div>
-            ))}
-            {streaming && (
-              <p className="visualizer-agent-thinking">Working…</p>
+            ) : (
+              item.text
             )}
           </div>
+        ))}
+        {streaming && <p className="visualizer-agent-thinking">Working…</p>}
+      </div>
 
-          {error && <p className="visualizer-agent-error">{error}</p>}
+      {error && <p className="visualizer-agent-error">{error}</p>}
 
-          <form className="visualizer-agent-input" onSubmit={submit}>
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Describe a visualization…"
-              rows={2}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault()
-                  e.currentTarget.form?.requestSubmit()
-                }
-              }}
-            />
-            <button type="submit" disabled={streaming || !input.trim()}>
-              Send
-            </button>
-          </form>
-        </>
-      )}
-    </aside>
+      <form className="visualizer-agent-input" onSubmit={submit}>
+        <textarea
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Describe a visualization…"
+          rows={2}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault()
+              e.currentTarget.form?.requestSubmit()
+            }
+          }}
+        />
+        <button type="submit" disabled={streaming || !input.trim()}>
+          Send
+        </button>
+      </form>
+    </div>
   )
 }

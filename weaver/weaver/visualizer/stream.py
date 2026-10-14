@@ -8,8 +8,7 @@ from google.adk.agents._streaming_mode import StreamingMode
 from google.adk.agents.run_config import RunConfig
 from google.genai import types
 
-from weaver.visualizer.agent import APP_NAME, USER_ID, runner, session_service
-from weaver.visualizer.events import (
+from weaver.shared.events import (
     ControlEvent,
     DoneEvent,
     ErrorEvent,
@@ -17,6 +16,7 @@ from weaver.visualizer.events import (
     TextEvent,
     ToolCallEvent,
 )
+from weaver.visualizer.agent import APP_NAME, USER_ID, runner, session_service
 
 # Tools that mutate the canvas; used to decide when to emit a ``canvas`` event.
 CODE_TOOLS = frozenset({"write_code", "apply_patch"})
