@@ -6,7 +6,7 @@ visualizer.
 
 from __future__ import annotations
 
-from weaver.converser.agent import create_session
 from weaver.converser.live import run
+from weaver.converser.service import create_session
 
 __all__ = ["create_session", "run"]

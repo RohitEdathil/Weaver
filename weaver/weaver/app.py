@@ -40,7 +40,7 @@ async def get_canvas(id: str) -> HTMLResponse:
 
 @app.get("/session/{id}/code", response_class=PlainTextResponse)
 async def get_code(id: str) -> PlainTextResponse:
-    code = await session.get_canvas(id)
+    code = await session.get_code(id)
     if code is None:
         raise HTTPException(status_code=404, detail="Session not found")
     return PlainTextResponse(content=code)
@@ -56,7 +56,7 @@ async def get_visualizer_conversation(id: str) -> list[dict[str, str]]:
 
 @app.post("/session/{id}/visualizer")
 async def visualizer_stream(id: str, body: VisualizerMessage) -> StreamingResponse:
-    if await session.get_canvas(id) is None:
+    if await session.get_code(id) is None:
         raise HTTPException(status_code=404, detail="Session not found")
 
     async def event_stream():

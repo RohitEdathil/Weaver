@@ -57,12 +57,3 @@ app = App(
 )
 session_service = InMemorySessionService()
 runner = Runner(app=app, session_service=session_service)
-
-
-async def create_session(session_id: str) -> None:
-    """Create the ADK session backing a Weaver session's converser."""
-    await session_service.create_session(
-        app_name=APP_NAME,
-        user_id=USER_ID,
-        session_id=session_id,
-    )

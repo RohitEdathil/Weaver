@@ -14,8 +14,8 @@ def read_code(tool_context: ToolContext) -> str:
     Call this before making changes so you edit against the latest canvas.
 
     Returns:
-        The full HTML source of the canvas, or an empty string if the canvas
-        has no code yet.
+        The full JavaScript source of the canvas, or an empty string if the
+        canvas has no code yet.
     """
     return tool_context.state.get(CODE_STATE_KEY, "")
 
@@ -26,7 +26,7 @@ def write_code(code: str, tool_context: ToolContext) -> str:
     Use this for full rewrites or the first version of the canvas.
 
     Args:
-        code: The complete, self-contained HTML document to render as the
+        code: The complete JavaScript for the p5.js sketch to render as the
             canvas.
 
     Returns:
