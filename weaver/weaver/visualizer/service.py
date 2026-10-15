@@ -16,23 +16,24 @@ from pathlib import Path
 from google.genai import types
 
 from weaver.visualizer.agent import APP_NAME, USER_ID, session_service
+from weaver.visualizer import snapshots
 from weaver.visualizer.tools import CODE_STATE_KEY
 
 _ASSETS = Path(__file__).parent / "assets"
-
-_TEMPLATE = (_ASSETS / "canvas.html").read_text(encoding="utf-8")
-
-# The initial sketch shown before the agent writes anything.
-PLACEHOLDER = (_ASSETS / "placeholder.js").read_text(encoding="utf-8")
 
 # A literal "</script>" anywhere in the code would close the script tag early.
 _END_SCRIPT = re.compile(r"</(script)", re.IGNORECASE)
 
 
+def _asset(name: str) -> str:
+    """Read an asset fresh, so edits show up without a full process restart."""
+    return (_ASSETS / name).read_text(encoding="utf-8")
+
+
 def render(code: str) -> str:
     """Embed a p5.js sketch into the fixed canvas HTML shell."""
     safe = _END_SCRIPT.sub(r"<\\/\1", code)
-    return _TEMPLATE.replace("/*__CODE__*/", safe)
+    return _asset("canvas.html").replace("/*__CODE__*/", safe)
 
 
 async def create_session(session_id: str) -> str:
@@ -40,13 +41,14 @@ async def create_session(session_id: str) -> str:
 
     Returns the initial canvas code.
     """
+    placeholder = _asset("placeholder.js")
     await session_service.create_session(
         app_name=APP_NAME,
         user_id=USER_ID,
         session_id=session_id,
-        state={CODE_STATE_KEY: PLACEHOLDER},
+        state={CODE_STATE_KEY: placeholder},
     )
-    return PLACEHOLDER
+    return placeholder
 
 
 async def get_code(session_id: str) -> str | None:
@@ -65,6 +67,18 @@ async def get_canvas(session_id: str) -> str | None:
     if code is None:
         return None
     return render(code)
+
+
+def deliver_snapshot(
+    session_id: str, *, data_url: str | None = None, error: str | None = None
+) -> bool:
+    """Hand a client's canvas screenshot to a waiting ``view_canvas`` call.
+
+    Returns whether a tool was waiting for it.
+    """
+    if data_url is not None:
+        return snapshots.deliver(session_id, data_url)
+    return snapshots.fail(session_id, error or "the canvas could not be captured")
 
 
 def _text_of(content: types.Content | None) -> str:

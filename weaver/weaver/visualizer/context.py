@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 # Tools whose inputs and outputs are stripped from every past turn.
 DEFAULT_REDACT_TOOLS: frozenset[str] = frozenset(
-    {"read_code", "write_code", "apply_patch"}
+    {"read_code", "write_code", "apply_patch", "view_canvas"}
 )
 
 # Text substituted for a redacted tool input or output.
@@ -58,7 +58,11 @@ def _redact_part(part: types.Part, tools: frozenset[str]) -> types.Part:
 
     response = part.function_response
     if response is not None and response.name in tools:
-        response = response.model_copy(update={"response": {"result": REDACTED}})
+        # ``parts`` carries media a tool attached (e.g. a ``view_canvas``
+        # screenshot), which must be dropped alongside the payload.
+        response = response.model_copy(
+            update={"response": {"result": REDACTED}, "parts": None}
+        )
         part = part.model_copy(update={"function_response": response})
 
     return part

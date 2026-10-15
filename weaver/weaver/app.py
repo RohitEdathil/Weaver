@@ -25,6 +25,11 @@ class VisualizerMessage(BaseModel):
     message: str
 
 
+class CanvasSnapshot(BaseModel):
+    data: str | None = None
+    error: str | None = None
+
+
 @app.post("/session", response_model=session.Session)
 async def create_session() -> session.Session:
     return await session.create_session()
@@ -52,6 +57,15 @@ async def get_visualizer_conversation(id: str) -> list[dict[str, str]]:
     if conversation is None:
         raise HTTPException(status_code=404, detail="Session not found")
     return conversation
+
+
+@app.post("/session/{id}/canvas-snapshot", status_code=204)
+async def post_canvas_snapshot(id: str, body: CanvasSnapshot) -> None:
+    if body.data is None and body.error is None:
+        raise HTTPException(
+            status_code=400, detail="Provide either a snapshot or an error"
+        )
+    visualizer.deliver_snapshot(id, data_url=body.data, error=body.error)
 
 
 @app.post("/session/{id}/visualizer")

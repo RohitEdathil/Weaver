@@ -31,6 +31,7 @@ const TOOL_LABELS: Record<string, string> = {
   read_code: 'Read canvas',
   write_code: 'Wrote canvas',
   apply_patch: 'Patched canvas',
+  view_canvas: 'Viewed canvas',
 }
 
 export function toolLabel(name: string): string {

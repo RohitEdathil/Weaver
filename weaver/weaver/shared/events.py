@@ -28,7 +28,7 @@ class ToolCallEvent(BaseModel):
     name: str
 
 
-ControlAction = Literal["refresh_canvas", "open_visualizer"]
+ControlAction = Literal["refresh_canvas", "open_visualizer", "capture_canvas"]
 
 
 class ControlEvent(BaseModel):

@@ -7,10 +7,15 @@ export interface Session {
   mode: string
 }
 
+export type ControlAction =
+  | 'refresh_canvas'
+  | 'open_visualizer'
+  | 'capture_canvas'
+
 export type VisualizerEvent =
   | { type: 'text'; text: string; partial: boolean }
   | { type: 'tool_call'; name: string }
-  | { type: 'control'; action: 'refresh_canvas' | 'open_visualizer' }
+  | { type: 'control'; action: ControlAction }
   | { type: 'error'; message: string }
   | { type: 'done' }
 
@@ -19,7 +24,7 @@ export type ConverserEvent =
   | { type: 'audio'; data: string; mime_type: string }
   | { type: 'interrupted' }
   | { type: 'tool_call'; name: string }
-  | { type: 'control'; action: 'refresh_canvas' | 'open_visualizer' }
+  | { type: 'control'; action: ControlAction }
   | { type: 'error'; message: string }
   | { type: 'done' }
 
@@ -65,6 +70,20 @@ export async function getCode(sessionId: string): Promise<string> {
     throw new Error(`Failed to load code (${res.status})`)
   }
   return res.text()
+}
+
+export async function postCanvasSnapshot(
+  sessionId: string,
+  snapshot: { data?: string; error?: string },
+): Promise<void> {
+  const res = await fetch(`${API_URL}/session/${sessionId}/canvas-snapshot`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(snapshot),
+  })
+  if (!res.ok) {
+    throw new Error(`Failed to deliver canvas snapshot (${res.status})`)
+  }
 }
 
 export async function sendVisualizerMessage(

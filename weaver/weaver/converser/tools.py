@@ -17,15 +17,17 @@ _BUSY = "Visualizer agent is busy, please don't call the tool till it finishes."
 
 
 async def use_visualizer(request: str, tool_context: ToolContext) -> str:
-    """Ask the Weaver visualizer to build or edit the canvas.
+    """Ask the Weaver visualizer to build, edit, or look at the canvas.
 
     Call this for any request about the visualization: creating something new,
-    changing what is on screen, or answering a question the visualizer can
-    answer. It runs in the background and reports back when it finishes.
+    changing what is on screen, or answering a question about it. The
+    visualizer can see the canvas it renders, so it can also describe what is
+    currently showing or check whether it looks right. It runs in the
+    background and reports back when it finishes.
 
     Args:
-        request: A clear, self-contained description of what to build or change,
-            including any relevant context from the conversation.
+        request: A clear, self-contained description of what to build, change,
+            or check, including any relevant context from the conversation.
 
     Returns:
         A summary of what the visualizer did.
@@ -48,5 +50,9 @@ async def use_visualizer(request: str, tool_context: ToolContext) -> str:
                 # reloads it once, when the visualizer is done, not on every
                 # turn.
                 bus.publish(session_id, ControlEvent(action="refresh_canvas"))
+            elif event.type == "control" and event.action == "capture_canvas":
+                # The visualizer wants to see the canvas; forward the request so
+                # the UI captures and returns a screenshot.
+                bus.publish(session_id, ControlEvent(action="capture_canvas"))
 
         return "\n".join(updates) or "The visualizer has finished."

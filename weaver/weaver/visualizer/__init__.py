@@ -16,6 +16,7 @@ from __future__ import annotations
 from weaver.visualizer.config import MODE
 from weaver.visualizer.service import (
     create_session,
+    deliver_snapshot,
     get_canvas,
     get_code,
     get_conversation,
@@ -25,6 +26,7 @@ from weaver.visualizer.stream import stream
 __all__ = [
     "MODE",
     "create_session",
+    "deliver_snapshot",
     "get_canvas",
     "get_code",
     "get_conversation",

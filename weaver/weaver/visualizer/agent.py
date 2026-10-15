@@ -17,7 +17,7 @@ from weaver.visualizer.config import CONFIG
 from weaver.visualizer.context import context_editing
 from weaver.visualizer.llm import model
 from weaver.visualizer.prompts import BASE_INSTRUCTION
-from weaver.visualizer.tools import apply_patch, read_code, write_code
+from weaver.visualizer.tools import apply_patch, read_code, view_canvas, write_code
 
 APP_NAME = "weaver"
 USER_ID = "default-user"
@@ -27,7 +27,7 @@ agent = LlmAgent(
     model=model,
     description="Writes and edits the interactive canvas for a Weaver session.",
     instruction=BASE_INSTRUCTION,
-    tools=[read_code, write_code, apply_patch],
+    tools=[read_code, write_code, apply_patch, view_canvas],
     generate_content_config=types.GenerateContentConfig(
         max_output_tokens=CONFIG.max_output_tokens,
     ),

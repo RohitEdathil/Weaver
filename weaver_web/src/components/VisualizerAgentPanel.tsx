@@ -9,16 +9,19 @@ interface Props {
   sessionId: string
   refreshToken: number
   onCanvasUpdate: () => void
+  onRequestSnapshot: () => Promise<string>
 }
 
 export function VisualizerAgentPanel({
   sessionId,
   refreshToken,
   onCanvasUpdate,
+  onRequestSnapshot,
 }: Props) {
   const { items, streaming, error, send, load } = useVisualizerAgent(
     sessionId,
     onCanvasUpdate,
+    onRequestSnapshot,
   )
   const [input, setInput] = useState('')
   const scrollRef = useRef<HTMLDivElement>(null)

@@ -22,5 +22,46 @@
     <script>
 /*__CODE__*/
     </script>
+    <script>
+      (function () {
+        var lastError = null;
+        window.addEventListener("error", function (event) {
+          lastError =
+            event && event.message ? event.message : "the sketch raised an error";
+        });
+        window.addEventListener("unhandledrejection", function (event) {
+          var reason = event && event.reason;
+          lastError =
+            (reason && (reason.message || String(reason))) ||
+            "the sketch raised an error";
+        });
+        window.addEventListener("message", function (event) {
+          var data = event.data;
+          if (!data || data.type !== "weaver:capture-canvas") return;
+          var reply = {
+            type: "weaver:canvas-snapshot",
+            requestId: data.requestId,
+          };
+          var canvas = document.querySelector("canvas");
+          if (!canvas) {
+            reply.error = lastError
+              ? "The canvas did not render because the sketch has an error: " +
+                lastError +
+                ". Fix the code and look again."
+              : "The canvas did not render, which means the sketch code has an " +
+                "error. Re-read the code, fix it, and look again.";
+          } else {
+            try {
+              reply.dataUrl = canvas.toDataURL("image/png");
+            } catch (err) {
+              reply.error = String(err);
+            }
+          }
+          if (event.source) {
+            event.source.postMessage(reply, event.origin || "*");
+          }
+        });
+      })();
+    </script>
   </body>
 </html>

@@ -12,6 +12,7 @@ interface Props {
   visualizerRefresh: number
   onVisualizerInvoked: () => void
   onCanvasRefresh: () => void
+  onRequestSnapshot: () => Promise<string>
 }
 
 export function SidePanel({
@@ -22,6 +23,7 @@ export function SidePanel({
   visualizerRefresh,
   onVisualizerInvoked,
   onCanvasRefresh,
+  onRequestSnapshot,
 }: Props) {
   return (
     <aside className={`side-panel${open ? ' open' : ''}`}>
@@ -52,6 +54,7 @@ export function SidePanel({
             sessionId={sessionId}
             onVisualizerInvoked={onVisualizerInvoked}
             onCanvasRefresh={onCanvasRefresh}
+            onRequestSnapshot={onRequestSnapshot}
           />
         </div>
         <div className="side-panel-view" hidden={tab !== 'visualizer'}>
@@ -59,6 +62,7 @@ export function SidePanel({
             sessionId={sessionId}
             refreshToken={visualizerRefresh}
             onCanvasUpdate={onCanvasRefresh}
+            onRequestSnapshot={onRequestSnapshot}
           />
         </div>
       </div>

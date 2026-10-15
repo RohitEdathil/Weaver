@@ -4,11 +4,13 @@ import {
   sendVisualizerMessage,
   type VisualizerEvent,
 } from '../api'
+import { deliverSnapshot } from '../canvasSnapshot'
 import { initialLogState, logReducer } from '../visualizerConversation'
 
 export function useVisualizerAgent(
   sessionId: string,
   onCanvasUpdate: () => void,
+  onRequestSnapshot: () => Promise<string>,
 ) {
   const [log, dispatch] = useReducer(logReducer, initialLogState)
   const [streaming, setStreaming] = useState(false)
@@ -16,12 +18,16 @@ export function useVisualizerAgent(
 
   const onEvent = useCallback(
     (event: VisualizerEvent) => {
-      if (event.type === 'control' && event.action === 'refresh_canvas') {
-        onCanvasUpdate()
+      if (event.type === 'control') {
+        if (event.action === 'refresh_canvas') {
+          onCanvasUpdate()
+        } else if (event.action === 'capture_canvas') {
+          void deliverSnapshot(sessionId, onRequestSnapshot)
+        }
       }
       dispatch({ type: 'event', event })
     },
-    [onCanvasUpdate],
+    [onCanvasUpdate, onRequestSnapshot, sessionId],
   )
 
   const send = useCallback(

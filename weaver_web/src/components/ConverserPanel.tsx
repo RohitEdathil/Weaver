@@ -7,16 +7,18 @@ interface Props {
   sessionId: string
   onVisualizerInvoked: () => void
   onCanvasRefresh: () => void
+  onRequestSnapshot: () => Promise<string>
 }
 
 export function ConverserPanel({
   sessionId,
   onVisualizerInvoked,
   onCanvasRefresh,
+  onRequestSnapshot,
 }: Props) {
   const { items, connected, recording, error, start, stop } = useConverser(
     sessionId,
-    { onVisualizerInvoked, onCanvasRefresh },
+    { onVisualizerInvoked, onCanvasRefresh, onRequestSnapshot },
   )
   const scrollRef = useRef<HTMLDivElement>(null)
 

@@ -16,10 +16,14 @@ from weaver.shared.events import (
     TextEvent,
     ToolCallEvent,
 )
+from weaver.visualizer import snapshots
 from weaver.visualizer.agent import APP_NAME, USER_ID, runner, session_service
 
 # Tools that mutate the canvas; used to decide when to emit a ``canvas`` event.
 CODE_TOOLS = frozenset({"write_code", "apply_patch"})
+
+# The tool that asks the browser for a screenshot of the canvas.
+SNAPSHOT_TOOL = "view_canvas"
 
 
 def _text_of(event: Any) -> str:
@@ -65,6 +69,11 @@ async def stream(session_id: str, message: str) -> AsyncIterator[Event]:
             # only the non-partial event holds the full call.
             if not event.partial:
                 for call in event.get_function_calls():
+                    if call.name == SNAPSHOT_TOOL:
+                        # Register before asking the client, so the reply has a
+                        # future to resolve even if it arrives immediately.
+                        snapshots.open(session_id)
+                        yield ControlEvent(action="capture_canvas")
                     yield ToolCallEvent(name=call.name)
 
             for response in event.get_function_responses():

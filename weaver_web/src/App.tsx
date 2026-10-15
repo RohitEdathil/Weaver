@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { canvasUrl, getCode } from './api'
+import { captureCanvas } from './canvasSnapshot'
 import { SidePanel, type PanelTab } from './components/SidePanel'
 import { useSession } from './hooks/useSession'
 import './App.css'
@@ -15,6 +16,8 @@ function App() {
   const [view, setView] = useState<View>('canvas')
   const [code, setCode] = useState('')
   const [codeError, setCodeError] = useState<string | null>(null)
+  const iframeRef = useRef<HTMLIFrameElement>(null)
+  const loadWaitersRef = useRef<Array<() => void>>([])
 
   useEffect(() => {
     if (!session || view !== 'code') return
@@ -44,6 +47,22 @@ function App() {
   const refreshCanvas = useCallback(() => {
     setCanvasVersion((version) => version + 1)
     setVisualizerRefresh((token) => token + 1)
+  }, [])
+
+  const handleCanvasLoad = useCallback(() => {
+    const waiters = loadWaitersRef.current
+    loadWaitersRef.current = []
+    for (const resolve of waiters) resolve()
+  }, [])
+
+  const requestSnapshot = useCallback(async () => {
+    const loaded = new Promise<void>((resolve) => {
+      loadWaitersRef.current.push(resolve)
+    })
+    setCanvasVersion((version) => version + 1)
+    await loaded
+    await new Promise((resolve) => window.setTimeout(resolve, 250))
+    return captureCanvas(iframeRef.current)
   }, [])
 
   if (error) {
@@ -95,19 +114,21 @@ function App() {
       </header>
 
       <div className="app-body">
-        <section className="canvas-frame">
-          {view === 'canvas' ? (
-            <iframe
-              key={`${session.id}:${canvasVersion}`}
-              title="Weaver canvas"
-              className="canvas"
-              src={canvasUrl(session.id)}
-            />
-          ) : codeError ? (
-            <p className="status error">{codeError}</p>
-          ) : (
-            <pre className="code-view">{code}</pre>
-          )}
+        <section className={`canvas-frame${view === 'code' ? ' code' : ''}`}>
+          <iframe
+            ref={iframeRef}
+            key={`${session.id}:${canvasVersion}`}
+            title="Weaver canvas"
+            className="canvas"
+            src={canvasUrl(session.id)}
+            onLoad={handleCanvasLoad}
+          />
+          {view === 'code' &&
+            (codeError ? (
+              <p className="status error">{codeError}</p>
+            ) : (
+              <pre className="code-view">{code}</pre>
+            ))}
         </section>
 
         <SidePanel
@@ -118,6 +139,7 @@ function App() {
           visualizerRefresh={visualizerRefresh}
           onVisualizerInvoked={refreshConversation}
           onCanvasRefresh={refreshCanvas}
+          onRequestSnapshot={requestSnapshot}
         />
       </div>
     </main>

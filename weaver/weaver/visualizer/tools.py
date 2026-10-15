@@ -2,10 +2,20 @@
 
 from __future__ import annotations
 
+import asyncio
+import base64
+import binascii
+
 from google.adk.tools import ToolContext
+from google.genai import types
 from pydantic import BaseModel, Field
 
+from weaver.visualizer import snapshots
+
 CODE_STATE_KEY = "canvas_code"
+
+# How long the tool waits for the browser to return a screenshot.
+SNAPSHOT_TIMEOUT_SECONDS = 20.0
 
 
 def read_code(tool_context: ToolContext) -> str:
@@ -95,3 +105,44 @@ def apply_patch(patches: list[Patch], tool_context: ToolContext) -> str:
 
     tool_context.state[CODE_STATE_KEY] = code
     return f"Applied {len(patches)} patch(es)."
+
+
+def _decode_data_url(data_url: str) -> tuple[str, bytes | None]:
+    """Split a ``data:<mime>;base64,<data>`` URL into its mime type and bytes."""
+    header, separator, encoded = data_url.partition(",")
+    if not separator or not encoded:
+        return "image/png", None
+    mime_type = header[5:].split(";", 1)[0] if header.startswith("data:") else ""
+    try:
+        return mime_type or "image/png", base64.b64decode(encoded)
+    except (binascii.Error, ValueError):
+        return mime_type or "image/png", None
+
+
+async def view_canvas(tool_context: ToolContext) -> types.Part | str:
+    """Look at the canvas exactly as the user sees it right now.
+
+    Call this after changing the canvas to check that it rendered as intended,
+    then fix anything that looks wrong and look again. Use it whenever you are
+    unsure what is currently on screen. It asks the user's browser for a fresh
+    screenshot of the canvas and returns that image to you.
+
+    Returns:
+        An image of the current canvas, or an error message describing why it
+        could not be captured.
+    """
+    session_id = tool_context.session.id
+    future = snapshots.open(session_id)
+    try:
+        data_url = await asyncio.wait_for(future, timeout=SNAPSHOT_TIMEOUT_SECONDS)
+    except asyncio.TimeoutError:
+        snapshots.close(session_id)
+        return "Error: the canvas snapshot timed out. Try again."
+    except Exception as exc:  # noqa: BLE001 - surfaced to the model as an error
+        snapshots.close(session_id)
+        return f"Error: {exc}"
+
+    mime_type, data = _decode_data_url(data_url)
+    if data is None:
+        return "Error: the canvas snapshot was not a valid image."
+    return types.Part.from_bytes(data=data, mime_type=mime_type)

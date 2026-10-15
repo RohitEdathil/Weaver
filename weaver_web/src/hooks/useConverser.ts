@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { AudioPlayer, MicRecorder, pcmBlobPayload } from '../audio'
 import { converserSocketUrl, type ConverserEvent } from '../api'
+import { deliverSnapshot } from '../canvasSnapshot'
 import {
   converserLogReducer,
   initialConverserLog,
@@ -12,6 +13,7 @@ const PROCESSOR_URL = `${import.meta.env.BASE_URL}audio-processor.js`
 interface Options {
   onVisualizerInvoked: () => void
   onCanvasRefresh: () => void
+  onRequestSnapshot: () => Promise<string>
 }
 
 export function useConverser(sessionId: string, options: Options) {
@@ -51,10 +53,12 @@ export function useConverser(sessionId: string, options: Options) {
         optionsRef.current.onVisualizerInvoked()
       } else if (event.action === 'refresh_canvas') {
         optionsRef.current.onCanvasRefresh()
+      } else if (event.action === 'capture_canvas') {
+        void deliverSnapshot(sessionId, optionsRef.current.onRequestSnapshot)
       }
     }
     dispatch({ type: 'event', event })
-  }, [])
+  }, [sessionId])
 
   const ensureSocket = useCallback((): WebSocket => {
     const existing = socketRef.current
