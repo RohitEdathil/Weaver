@@ -32,6 +32,9 @@ Open http://localhost:5173.
 | -------------- | ----------------------- | -------------------- |
 | `VITE_API_URL` | `http://localhost:8000` | Weaver backend base. |
 
+The canvas is untrusted agent-authored HTML and is served with a
+`Content-Security-Policy: sandbox` header.
+
 ## Scripts
 
 - `npm run dev` – dev server with HMR

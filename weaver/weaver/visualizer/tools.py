@@ -11,6 +11,7 @@ from google.genai import types
 from pydantic import BaseModel, Field
 
 from weaver.visualizer import snapshots
+from weaver.visualizer.validate import SketchValidationError, validate_sketch
 
 CODE_STATE_KEY = "canvas_code"
 
@@ -40,8 +41,13 @@ def write_code(code: str, tool_context: ToolContext) -> str:
             canvas.
 
     Returns:
-        A short confirmation message.
+        A short confirmation message, or an error message if the sketch was
+        rejected by validation.
     """
+    try:
+        validate_sketch(code)
+    except SketchValidationError as exc:
+        return f"Error: sketch rejected: {exc}. The canvas was not changed."
     tool_context.state[CODE_STATE_KEY] = code
     return f"Canvas replaced ({len(code)} characters)."
 
@@ -103,6 +109,10 @@ def apply_patch(patches: list[Patch], tool_context: ToolContext) -> str:
 
         code = code.replace(patch.target, patch.content, patch.count)
 
+    try:
+        validate_sketch(code)
+    except SketchValidationError as exc:
+        return f"Error: patch result rejected: {exc}. The canvas was not changed."
     tool_context.state[CODE_STATE_KEY] = code
     return f"Applied {len(patches)} patch(es)."
 
