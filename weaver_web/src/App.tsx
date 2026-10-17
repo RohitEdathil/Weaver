@@ -120,6 +120,7 @@ function App() {
             key={`${session.id}:${canvasVersion}`}
             title="Weaver canvas"
             className="canvas"
+            sandbox="allow-scripts"
             src={canvasUrl(session.id)}
             onLoad={handleCanvasLoad}
           />

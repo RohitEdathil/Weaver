@@ -40,7 +40,13 @@ async def get_canvas(id: str) -> HTMLResponse:
     canvas = await session.get_canvas(id)
     if canvas is None:
         raise HTTPException(status_code=404, detail="Session not found")
-    return HTMLResponse(content=canvas)
+    return HTMLResponse(
+        content=canvas,
+        headers={
+            "Content-Security-Policy": "sandbox allow-scripts",
+            "Cache-Control": "no-store",
+        },
+    )
 
 
 @app.get("/session/{id}/code", response_class=PlainTextResponse)

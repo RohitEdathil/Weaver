@@ -77,9 +77,9 @@ async def stream(session_id: str, message: str) -> AsyncIterator[Event]:
                     yield ToolCallEvent(name=call.name)
 
             for response in event.get_function_responses():
-                if response.name in CODE_TOOLS:
-                    code_changed = True
                 error = _error_of(response.response)
+                if response.name in CODE_TOOLS and not error:
+                    code_changed = True
                 if error:
                     yield ErrorEvent(message=error)
 
