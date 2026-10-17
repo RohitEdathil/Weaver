@@ -13,6 +13,8 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from google.adk.events.event import Event
+from google.adk.events.event_actions import EventActions
 from google.genai import types
 
 from weaver.visualizer.agent import APP_NAME, USER_ID, session_service
@@ -67,6 +69,29 @@ async def get_canvas(session_id: str) -> str | None:
     if code is None:
         return None
     return render(code)
+
+
+async def set_code(session_id: str, code: str) -> bool:
+    """Replace the canvas code for a session.
+
+    Writes through an event's state delta so the change is persisted by the
+    session service (not just the returned copy). Returns ``False`` when the
+    session does not exist.
+    """
+    session = await session_service.get_session(
+        app_name=APP_NAME, user_id=USER_ID, session_id=session_id
+    )
+    if session is None:
+        return False
+    await session_service.append_event(
+        session=session,
+        event=Event(
+            invocation_id="set-code",
+            author="user",
+            actions=EventActions(state_delta={CODE_STATE_KEY: code}),
+        ),
+    )
+    return True
 
 
 def deliver_snapshot(

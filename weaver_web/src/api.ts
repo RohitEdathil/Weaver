@@ -72,6 +72,17 @@ export async function getCode(sessionId: string): Promise<string> {
   return res.text()
 }
 
+export async function setCode(sessionId: string, code: string): Promise<void> {
+  const res = await fetch(`${API_URL}/session/${sessionId}/code`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code }),
+  })
+  if (!res.ok) {
+    throw new Error(`Failed to save code (${res.status})`)
+  }
+}
+
 export async function postCanvasSnapshot(
   sessionId: string,
   snapshot: { data?: string; error?: string },

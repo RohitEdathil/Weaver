@@ -25,6 +25,10 @@ class VisualizerMessage(BaseModel):
     message: str
 
 
+class CanvasCode(BaseModel):
+    code: str
+
+
 class CanvasSnapshot(BaseModel):
     data: str | None = None
     error: str | None = None
@@ -55,6 +59,12 @@ async def get_code(id: str) -> PlainTextResponse:
     if code is None:
         raise HTTPException(status_code=404, detail="Session not found")
     return PlainTextResponse(content=code)
+
+
+@app.put("/session/{id}/code", status_code=204)
+async def put_code(id: str, body: CanvasCode) -> None:
+    if not await session.set_code(id, body.code):
+        raise HTTPException(status_code=404, detail="Session not found")
 
 
 @app.get("/session/{id}/visualizer/conversation")
