@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { canvasUrl, getCode } from './api'
 import { captureCanvas } from './canvasSnapshot'
+import { Opening } from './components/Opening'
 import { SidePanel, type PanelTab } from './components/SidePanel'
 import { useSession } from './hooks/useSession'
 import './App.css'
@@ -9,6 +10,7 @@ type View = 'canvas' | 'code'
 
 function App() {
   const { session, error } = useSession()
+  const [introVisible, setIntroVisible] = useState(true)
   const [panelOpen, setPanelOpen] = useState(true)
   const [tab, setTab] = useState<PanelTab>('converser')
   const [canvasVersion, setCanvasVersion] = useState(0)
@@ -73,45 +75,39 @@ function App() {
     )
   }
 
-  if (!session) {
-    return (
-      <main className="app">
-        <p className="status">Initializing session…</p>
-      </main>
-    )
-  }
-
   return (
     <main className="app">
-      <header className="app-header">
-        <h1>Weaver</h1>
-        <span className="mode-badge">{session.mode}</span>
-        <code className="session-id">{session.id}</code>
-        <div className="view-switcher" role="group" aria-label="View">
-          <button
-            type="button"
-            className={view === 'canvas' ? 'active' : undefined}
-            onClick={() => setView('canvas')}
-          >
-            Canvas
-          </button>
-          <button
-            type="button"
-            className={view === 'code' ? 'active' : undefined}
-            onClick={() => setView('code')}
-          >
-            Code
-          </button>
-        </div>
-        <button
-          type="button"
-          className="app-panel-toggle"
-          onClick={() => setPanelOpen((open) => !open)}
-          aria-label={panelOpen ? 'Collapse side panel' : 'Expand side panel'}
-        >
-          {panelOpen ? '›' : '‹'}
-        </button>
-      </header>
+      {session ? (
+        <>
+          <header className="app-header">
+            <h1>Weaver</h1>
+            <span className="mode-badge">{session.mode}</span>
+            <code className="session-id">{session.id}</code>
+            <div className="view-switcher" role="group" aria-label="View">
+              <button
+                type="button"
+                className={view === 'canvas' ? 'active' : undefined}
+                onClick={() => setView('canvas')}
+              >
+                Canvas
+              </button>
+              <button
+                type="button"
+                className={view === 'code' ? 'active' : undefined}
+                onClick={() => setView('code')}
+              >
+                Code
+              </button>
+            </div>
+            <button
+              type="button"
+              className="app-panel-toggle"
+              onClick={() => setPanelOpen((open) => !open)}
+              aria-label={panelOpen ? 'Collapse side panel' : 'Expand side panel'}
+            >
+              {panelOpen ? '›' : '‹'}
+            </button>
+          </header>
 
       <div className="app-body">
         <section className={`canvas-frame${view === 'code' ? ' code' : ''}`}>
@@ -132,17 +128,25 @@ function App() {
             ))}
         </section>
 
-        <SidePanel
-          sessionId={session.id}
-          open={panelOpen}
-          tab={tab}
-          onTabChange={setTab}
-          visualizerRefresh={visualizerRefresh}
-          onVisualizerInvoked={refreshConversation}
-          onCanvasRefresh={refreshCanvas}
-          onRequestSnapshot={requestSnapshot}
-        />
-      </div>
+            <SidePanel
+              sessionId={session.id}
+              open={panelOpen}
+              tab={tab}
+              onTabChange={setTab}
+              visualizerRefresh={visualizerRefresh}
+              onVisualizerInvoked={refreshConversation}
+              onCanvasRefresh={refreshCanvas}
+              onRequestSnapshot={requestSnapshot}
+            />
+          </div>
+        </>
+      ) : (
+        <p className="status">Initializing session…</p>
+      )}
+
+      {introVisible && (
+        <Opening ready={Boolean(session)} onFinish={() => setIntroVisible(false)} />
+      )}
     </main>
   )
 }
