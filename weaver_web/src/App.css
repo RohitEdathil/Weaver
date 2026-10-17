@@ -26,7 +26,7 @@
   border-radius: 999px;
   border: 1px solid #2f2f3a;
   background: #17171f;
-  color: #93c5fd;
+  color: #c39aff;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -70,7 +70,7 @@
 }
 
 .view-switcher button.active {
-  background: #2563eb;
+  background: #9d4dff;
   color: #fff;
 }
 

@@ -36,7 +36,7 @@
   max-width: 85%;
   padding: 8px 10px;
   border-radius: 10px;
-  background: #2563eb;
+  background: #9d4dff;
   color: #fff;
 }
 
@@ -80,7 +80,7 @@
 }
 
 .msg-markdown a {
-  color: #60a5fa;
+  color: #c39aff;
 }
 
 .msg-markdown code {
@@ -148,7 +148,7 @@
   border-radius: 999px;
   border: 1px solid #2f2f3a;
   background: #17171f;
-  color: #93c5fd;
+  color: #c39aff;
   font-size: 11px;
   font-family: ui-monospace, Consolas, monospace;
 }
@@ -182,7 +182,7 @@
 
 .visualizer-agent-input textarea:focus {
   outline: none;
-  border-color: #2563eb;
+  border-color: #9d4dff;
 }
 
 .visualizer-agent-input button {
@@ -190,7 +190,7 @@
   padding: 0 14px;
   border: 0;
   border-radius: 8px;
-  background: #2563eb;
+  background: #9d4dff;
   color: #fff;
   font-weight: 600;
   cursor: pointer;

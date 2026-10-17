@@ -273,7 +273,6 @@ export function Opening({ ready, onFinish }: OpeningProps) {
         </div>
       </section>
 
-      <div className="opening-hint">Move your cursor · Watch the threads respond</div>
     </div>
   )
 }
