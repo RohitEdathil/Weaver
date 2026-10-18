@@ -1,8 +1,10 @@
 import { ConverserPanel } from './ConverserPanel'
+import { SavedCanvasesPanel } from './SavedCanvasesPanel'
 import { VisualizerAgentPanel } from './VisualizerAgentPanel'
+import type { SavedCanvas } from '../savedCanvases'
 import './SidePanel.css'
 
-export type PanelTab = 'converser' | 'visualizer'
+export type PanelTab = 'converser' | 'visualizer' | 'saved'
 
 interface Props {
   sessionId: string
@@ -13,6 +15,10 @@ interface Props {
   onVisualizerInvoked: () => void
   onCanvasRefresh: () => void
   onRequestSnapshot: () => Promise<string>
+  firebaseEnabled: boolean
+  deviceId: string
+  savedRefresh: number
+  onArtifactLoaded: (artifact: SavedCanvas) => void
 }
 
 export function SidePanel({
@@ -24,6 +30,10 @@ export function SidePanel({
   onVisualizerInvoked,
   onCanvasRefresh,
   onRequestSnapshot,
+  firebaseEnabled,
+  deviceId,
+  savedRefresh,
+  onArtifactLoaded,
 }: Props) {
   return (
     <aside className={`side-panel${open ? ' open' : ''}`}>
@@ -46,6 +56,15 @@ export function SidePanel({
         >
           Visualizer
         </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'saved'}
+          className={tab === 'saved' ? 'active' : undefined}
+          onClick={() => onTabChange('saved')}
+        >
+          Saved
+        </button>
       </div>
 
       <div className="side-panel-body">
@@ -63,6 +82,15 @@ export function SidePanel({
             refreshToken={visualizerRefresh}
             onCanvasUpdate={onCanvasRefresh}
             onRequestSnapshot={onRequestSnapshot}
+          />
+        </div>
+        <div className="side-panel-view" hidden={tab !== 'saved'}>
+          <SavedCanvasesPanel
+            sessionId={sessionId}
+            firebaseEnabled={firebaseEnabled}
+            deviceId={deviceId}
+            refreshToken={savedRefresh}
+            onArtifactLoaded={onArtifactLoaded}
           />
         </div>
       </div>

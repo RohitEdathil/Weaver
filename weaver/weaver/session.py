@@ -23,6 +23,10 @@ async def get_code(session_id: str) -> str | None:
     return await visualizer.get_code(session_id)
 
 
+async def set_code(session_id: str, code: str) -> bool:
+    return await visualizer.set_code(session_id, code)
+
+
 async def get_canvas(session_id: str) -> str | None:
     return await visualizer.get_canvas(session_id)
 

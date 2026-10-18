@@ -20,6 +20,7 @@ from weaver.visualizer.service import (
     get_canvas,
     get_code,
     get_conversation,
+    set_code,
 )
 from weaver.visualizer.stream import stream
 
@@ -30,5 +31,6 @@ __all__ = [
     "get_canvas",
     "get_code",
     "get_conversation",
+    "set_code",
     "stream",
 ]

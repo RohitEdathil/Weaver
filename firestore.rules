@@ -1,0 +1,18 @@
+rules_version = '2';
+
+// Firestore security rules for Weaver saved canvases.
+//
+// NOTE: there is no sign-in. Each canvas carries a random per-browser
+// `deviceId` field, and these rules allow anyone to read and write the
+// collection. The field keeps browsers apart in the UI but is NOT a security
+// boundary — treat saved canvases as public. Deploy with:
+//
+//   firebase deploy --only firestore:rules
+//
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /canvases/{canvasId} {
+      allow read, write: if true;
+    }
+  }
+}

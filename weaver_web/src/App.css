@@ -33,17 +33,27 @@
   letter-spacing: 0.5px;
 }
 
-.session-id {
+.session-title {
   margin-left: auto;
-  font-family: ui-monospace, Consolas, monospace;
-  font-size: 12px;
+  min-width: 0;
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
   color: #9ca3af;
 }
 
-.view-switcher {
+.header-center {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.view-switcher {
   display: flex;
   border: 1px solid #2f2f3a;
   border-radius: 6px;
@@ -72,6 +82,37 @@
 .view-switcher button.active {
   background: #9d4dff;
   color: #fff;
+}
+
+.artifact-button {
+  padding: 5px 12px;
+  border: 1px solid #2f2f3a;
+  border-radius: 6px;
+  background: #17171f;
+  color: #d1d5db;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.artifact-button:hover:not(:disabled) {
+  background: #1f1f29;
+}
+
+.artifact-button:disabled {
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.artifact-error {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #f87171;
+  font-size: 12px;
 }
 
 .app-panel-toggle {
