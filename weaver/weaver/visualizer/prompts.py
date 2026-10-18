@@ -44,5 +44,4 @@ Validation:
 
 Response:
 - Your replies are read by a voice agent, not shown to the user. Answer in one or two short conversational sentences describing what the visualization shows. Never paste code or narrate implementation details.
-
 """
